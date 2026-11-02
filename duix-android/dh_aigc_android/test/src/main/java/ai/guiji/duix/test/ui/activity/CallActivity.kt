@@ -12,6 +12,7 @@ import ai.guiji.duix.test.ui.dialog.AudioRecordDialog
 import ai.guiji.duix.test.util.StringUtils
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.text.TextUtils
@@ -19,7 +20,6 @@ import android.util.Log
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.Toast
-import com.bumptech.glide.Glide
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -51,6 +51,8 @@ class CallActivity : BaseActivity() {
     }
 
     private lateinit var binding: ActivityCallBinding
+    private var streamer: NetworkAudioStreamer? = null
+    private var streaming = false
     private var duix: DUIX? = null
     private var mDUIXRender: DUIXRenderer? = null
     private var mModelInfo: ModelInfo?=null     // 加载的模型信息
@@ -67,7 +69,10 @@ class CallActivity : BaseActivity() {
         modelUrl = intent.getStringExtra("modelUrl") ?: ""
         debug = intent.getBooleanExtra("debug", false)
 
-        Glide.with(mContext).load("file:///android_asset/bg/bg1.png").into(binding.ivBg)
+        // 绿幕背景：不用 bg1.png 图片了，纯绿方便 OBS 做色度抠像；
+        // 数字人层本身是透明的，绿底会从人物后面透出来。
+        binding.ivBg.setImageDrawable(null)
+        binding.ivBg.setBackgroundColor(Color.GREEN)
 
         binding.glTextureView.setEGLContextClientVersion(GL_CONTEXT_VERSION)
         binding.glTextureView.setEGLConfigChooser(8, 8, 8, 8, 16, 0)
@@ -106,7 +111,38 @@ class CallActivity : BaseActivity() {
             duix?.startRandomMotion(true)
         }
         binding.btnStopPlay.setOnClickListener {
+            if (streaming) stopStreaming()
             duix?.stopAudio()
+        }
+
+        binding.btnStream.setOnClickListener {
+            if (streaming) {
+                stopStreaming()
+            } else {
+                val host = binding.etPcIp.text.toString().trim()
+                if (host.isEmpty()) {
+                    Toast.makeText(mContext, "先填电脑 IP", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                streamer = NetworkAudioStreamer(object : DuixPcmSink {
+                    override fun startPush() {
+                        duix?.startPush()
+                    }
+
+                    override fun pushPcm(data: ByteArray, length: Int) {
+                        duix?.pushPcm(data.copyOf(length))
+                    }
+
+                    override fun stopPush() {
+                        duix?.stopPush()
+                    }
+                }) { status ->
+                    runOnUiThread { binding.tvStreamStatus.text = status }
+                }
+                streamer?.start(host, 8765)
+                streaming = true
+                binding.btnStream.text = "停止推流"
+            }
         }
 
         mDUIXRender =
@@ -183,6 +219,7 @@ class CallActivity : BaseActivity() {
             binding.btnPlayWAV.isEnabled = true
             binding.switchMute.isEnabled = true
             binding.btnStopPlay.isEnabled = true
+            binding.btnStream.isEnabled = true
 
             mModelInfo?.let { modelInfo ->
                 if (modelInfo.motionRegions.isNotEmpty()) {
@@ -210,7 +247,17 @@ class CallActivity : BaseActivity() {
     }
 
 
+    private fun stopStreaming() {
+        streamer?.stop()
+        streamer = null
+        streaming = false
+        binding.btnStream.text = "开始推流"
+        binding.tvStreamStatus.text = "未连接"
+    }
+
     override fun onDestroy() {
+        streamer?.stop()
+        streamer = null
         super.onDestroy()
         duix?.release()
     }
