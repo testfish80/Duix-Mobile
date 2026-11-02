@@ -18,18 +18,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 右下角 DUIX 水印遮盖：水印是画进渲染帧里的，改不了它的颜色，
-         就在它上面压一块和背景完全一样的纯绿（#00FF00），OBS 色度键
-         会连这块一起抠掉，观众端就看不到水印了。注意它不在隐藏界面
-         的列表里：隐藏按钮藏它的话，水印会在推流画面里重新露出来。
-         尺寸是估的（180x56dp），如果水印还有边露出来，告诉我大概
-         宽高，我再调大。 -->
+    <!-- 右下角 DUIX 水印遮盖 -->
     <View
         android:id="@+id/vWatermarkCover"
         android:background="#00FF00"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="180dp"
+        android:layout_width="90dp"
         android:layout_height="56dp" />
 
     <TextView
