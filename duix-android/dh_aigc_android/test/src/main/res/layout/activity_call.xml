@@ -178,16 +178,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- 一键隐藏/显示界面：放在右下角、最后声明以保证压在其它覆盖层上面；
-         这个按钮本身永远保留，隐藏状态下变半透明小按钮，点它就能恢复；
-         其它按钮、提示、调试信息都会被它一起藏起来。 -->
+    <!-- 一键隐藏/显示界面：放在右侧靠下、但抬高到底边 100dp 以上，
+         避开数字人渲染帧右下角自带的 DUIX 字样水印（那是模型/原生层
+         画进帧里的，布局里没有对应控件，移不掉它，只能移我们的按钮）。
+         最后声明以保证压在其它覆盖层上面；按钮本身永远保留，
+         隐藏状态下变半透明小按钮，点它就能恢复。 -->
     <Button
         android:id="@+id/btnToggleUi"
         android:text="隐藏界面"
         android:textSize="13sp"
         android:textColor="@color/white"
         android:background="@drawable/shape_common_btn"
-        android:layout_margin="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="wrap_content"
