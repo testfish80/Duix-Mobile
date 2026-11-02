@@ -199,9 +199,10 @@
         android:textColor="@color/white"
         android:background="@drawable/shape_common_btn"
         android:layout_marginEnd="12dp"
-        android:layout_marginBottom="100dp"
+        
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
+
