@@ -40,20 +40,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- 一键隐藏/显示界面：这个按钮本身永远保留，隐藏状态下变半透明小按钮，
-         点它就能恢复；其它按钮、提示、调试信息都会被它一起藏起来。 -->
-    <Button
-        android:id="@+id/btnToggleUi"
-        android:text="隐藏界面"
-        android:textSize="13sp"
-        android:textColor="@color/white"
-        android:background="@drawable/shape_common_btn"
-        android:layout_margin="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/switchMute"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
     <TextView
         android:id="@+id/tvMotionTips"
         android:visibility="invisible"
@@ -189,6 +175,21 @@
         android:textSize="13sp"
         android:textColor="@color/white"
         android:enabled="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!-- 一键隐藏/显示界面：放在右下角、最后声明以保证压在其它覆盖层上面；
+         这个按钮本身永远保留，隐藏状态下变半透明小按钮，点它就能恢复；
+         其它按钮、提示、调试信息都会被它一起藏起来。 -->
+    <Button
+        android:id="@+id/btnToggleUi"
+        android:text="隐藏界面"
+        android:textSize="13sp"
+        android:textColor="@color/white"
+        android:background="@drawable/shape_common_btn"
+        android:layout_margin="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
