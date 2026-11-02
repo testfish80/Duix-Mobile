@@ -39,7 +39,7 @@ class CallActivity : BaseActivity() {
     private fun applyMessage(msg: String){
         if (debug){
             runOnUiThread {
-                binding.tvDebug.visibility = View.VISIBLE
+                if (!uiHidden) binding.tvDebug.visibility = View.VISIBLE
                 if (mMessage.length > 10000){
                     mMessage = ""
                 }
@@ -53,6 +53,33 @@ class CallActivity : BaseActivity() {
     private lateinit var binding: ActivityCallBinding
     private var streamer: NetworkAudioStreamer? = null
     private var streaming = false
+    // 一键隐藏/显示：隐藏时先记下每个覆盖层控件当时的可见状态，
+    // 显示时按原样恢复（而不是一律改回 VISIBLE），这样随机动作、
+    // 调试信息这些本来就是 invisible/gone 的不会被误打开。
+    // 注意：btnToggleUi 本身不在这个列表里，永远保留可点。
+    private var uiHidden = false
+    private var savedVisibilities = mutableMapOf<View, Int>()
+    private fun overlayViews(): List<View> = listOf(
+        binding.switchMute, binding.tvMotionTips, binding.rvMotion,
+        binding.btnRandomMotion, binding.llStream, binding.btnRecord,
+        binding.btnPlayPCM, binding.btnPlayWAV, binding.btnStopPlay,
+        binding.tvAITips, binding.tvDebug
+    )
+    private fun toggleUi() {
+        if (uiHidden) {
+            savedVisibilities.forEach { (view, visibility) -> view.visibility = visibility }
+            savedVisibilities.clear()
+            uiHidden = false
+            binding.btnToggleUi.text = "隐藏界面"
+            binding.btnToggleUi.alpha = 1.0f
+        } else {
+            savedVisibilities = overlayViews().associateWith { it.visibility }.toMutableMap()
+            overlayViews().forEach { it.visibility = View.GONE }
+            uiHidden = true
+            binding.btnToggleUi.text = "显示界面"
+            binding.btnToggleUi.alpha = 0.5f
+        }
+    }
     private var duix: DUIX? = null
     private var mDUIXRender: DUIXRenderer? = null
     private var mModelInfo: ModelInfo?=null     // 加载的模型信息
@@ -114,6 +141,8 @@ class CallActivity : BaseActivity() {
             if (streaming) stopStreaming()
             duix?.stopAudio()
         }
+
+        binding.btnToggleUi.setOnClickListener { toggleUi() }
 
         binding.btnStream.setOnClickListener {
             if (streaming) {
@@ -239,8 +268,10 @@ class CallActivity : BaseActivity() {
                         })
                         binding.rvMotion.adapter = motionAdapter
                     }
-                    binding.btnRandomMotion.visibility = View.VISIBLE
-                    binding.tvMotionTips.visibility = View.VISIBLE
+                    if (!uiHidden) {
+                        binding.btnRandomMotion.visibility = View.VISIBLE
+                        binding.tvMotionTips.visibility = View.VISIBLE
+                    }
                 }
             }
         }
